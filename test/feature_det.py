@@ -2,7 +2,16 @@
 Feature detector
 
 rete utilizzata per la feature detection. Il main si occupa del training
+
+https://www.kaggle.com/models/google/movenet/frameworks/tfLite/variations/singlepose-lightning-tflite-int8
 """
+import time
+
+import numpy as np
+import tensorflow as tf
+import tensorflow_hub as hub
+
+from utils import draw_detections
 
 ## indice dei punti
 KEYPOINT_DICT = {
@@ -36,18 +45,16 @@ column_names = [
     'left_ankle_x', 'left_ankle_y', 'right_ankle_x', 'right_ankle_y'
 ]
 
-import numpy as np
-import tensorflow as tf
-import tensorflow_hub as hub
-
-from utils import draw_detections
 
 # Disable GPU devices
 tf.config.set_visible_devices([], 'GPU')
 
-module = hub.load("https://tfhub.dev/google/movenet/singlepose/lightning/4")
-model = module.signatures['serving_default']
 input_size = 192
+
+
+def load_saved_model():
+    module = hub.load("https://tfhub.dev/google/movenet/singlepose/lightning/4")
+    return module.signatures['serving_default']
 
 
 def load_image(file_path):
@@ -60,6 +67,8 @@ if __name__ == '__main__':
     import os
     import tqdm
     import pandas as pd
+
+    model = load_saved_model()
 
     # il main è usato per addestrare la rete.
     DATASET_ROOT = 'data'
@@ -75,9 +84,12 @@ if __name__ == '__main__':
     for subdir in classes:
         all_points = []
         class_root = os.path.join(DATASET_ROOT, subdir)
+        print(class_root)
         for f in tqdm.tqdm(os.listdir(class_root)):
+            print(f)
             image = load_image(os.path.join(class_root, f))
 
+            t0 = time.time()
             input_image = tf.expand_dims(image, axis=0)
             input_image = tf.image.resize_with_pad(input_image, input_size, input_size)
 
@@ -124,12 +136,12 @@ if __name__ == '__main__':
             moved_center = moved_center_clipped
             all_points.append(moved_center)
 
+            t1 = time.time()
+            print(f"time {t1 - t0}")
+
         if len(all_points) > 0:
-            reshaped_array = np.asarray(all_points).reshape(2, 17*2)
+            reshaped_array = np.asarray(all_points).reshape(-1, 17 * 2)
             points_df = pd.DataFrame(reshaped_array)
             points_df.columns = column_names
             points_df.to_csv(class_root + '.csv', index=False)
             print(points_df.head())
-            # all_points = np.asarray(all_points)
-            # print (all_points.reshape(2, -1))
-            # np.savetxt(class_root + ".csv", all_points.reshape(2, -1), delimiter=",")
