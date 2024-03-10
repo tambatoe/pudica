@@ -51,7 +51,6 @@ tf.config.set_visible_devices([], 'GPU')
 
 input_size = 192
 
-
 def load_saved_model():
     module = hub.load("https://tfhub.dev/google/movenet/singlepose/lightning/4")
     return module.signatures['serving_default']
