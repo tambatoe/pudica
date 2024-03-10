@@ -27,10 +27,8 @@ class Detection:
         # SavedModel format expects tensor type of int32.
         self.image = tf.cast(m_image, dtype=tf.int32)
 
-
     def normalize_points(self, keypoints):
         return keypoints
-
 
     def predict(self):
         outputs = self.model(self.image)
@@ -83,15 +81,12 @@ if __name__ == '__main__':
             detection_network.load_image(os.path.join(class_root, f))
             detected = detection_network.predict()
             normalized = detection_network.normalize_points(detected)
-            print(detected)
-
             all_points.append(normalized)
-
-            break
 
         if len(all_points) > 0:
             reshaped_array = np.asarray(all_points).reshape(-1, 17 * 2)
             points_df = pd.DataFrame(reshaped_array)
             points_df.columns = column_names
             points_df.to_csv(class_root + '.csv', index=False)
-            print(points_df.head())
+
+
