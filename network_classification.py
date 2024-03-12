@@ -54,7 +54,9 @@ if __name__ == '__main__':
 
     model.fit(train_ds,
               validation_data=test_ds,
-              epochs=5000)
+              epochs=50)
+
+    model.save('saved_models/classification')
 
     evaluation = model.evaluate(val_ds)
     print(evaluation)

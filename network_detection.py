@@ -1,6 +1,6 @@
 from defines import KEYPOINT_DICT, column_names
 
-import time
+import cv2
 
 import numpy as np
 import tensorflow as tf
@@ -14,6 +14,15 @@ class Detection:
         self.model = self.model.signatures['serving_default']
 
         self.image = None
+
+    def set_image(self, img):
+        input_size = 192
+        m_img = tf.convert_to_tensor(img)
+        m_image = tf.expand_dims(m_img, axis=0)
+        m_image = tf.image.resize_with_pad(m_image, input_size, input_size)
+
+        # SavedModel format expects tensor type of int32.
+        self.image = tf.cast(m_image, dtype=tf.int32)
 
     def load_image(self, file_path):
         # TODO: aggiungere anche il modello di conversione immagine
@@ -88,5 +97,3 @@ if __name__ == '__main__':
             points_df = pd.DataFrame(reshaped_array)
             points_df.columns = column_names
             points_df.to_csv(class_root + '.csv', index=False)
-
-
