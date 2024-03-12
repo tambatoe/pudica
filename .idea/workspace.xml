@@ -4,10 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="663de708-a009-4aa8-8eab-54722926917c" name="Changes" comment="refactor network detection">
+    <list default="true" id="663de708-a009-4aa8-8eab-54722926917c" name="Changes" comment="Add classification">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network_classification.py" beforeDir="false" afterPath="$PROJECT_DIR$/network_classification.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network_detection.py" beforeDir="false" afterPath="$PROJECT_DIR$/network_detection.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -194,13 +193,22 @@
       <option name="project" value="LOCAL" />
       <updated>1710090059424</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Add classification">
+      <option name="closed" value="true" />
+      <created>1710107139913</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1710107139913</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="WIP running integration" />
     <MESSAGE value="missing gitignore" />
     <MESSAGE value="refactor network detection" />
-    <option name="LAST_COMMIT_MESSAGE" value="refactor network detection" />
+    <MESSAGE value="Add classification" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add classification" />
   </component>
 </project>

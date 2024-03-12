@@ -7,27 +7,12 @@ from sklearn.model_selection import train_test_split
 import tensorflow as tf
 
 
-def line_to_matrix(line, label):
-    row = np.zeros((line.shape[0] // 2, 2), np.float32)
-    x_val = np.take(line, list(range(0, line.shape[0], 2)))
-    y_val = np.take(line, list(range(1, line.shape[0], 2)))
-
-    for i in range(0, row.shape[0]):
-        row[i] = [x_val[i], y_val[i]]
-
-    return [row, label]
-
-
 def df_to_ds(dataframe_in):
     df_copy = dataframe_in.copy()
-    labels = df_copy.pop(1)
-    df_np = df_copy.to_numpy()
-    df_list = []
+    labels = df_copy.pop('category')
 
-    for el in df_np:
-        df_list.append(el[0])
-
-    return tf.data.Dataset.from_tensor_slices((df_list, labels.to_list())).batch(32)
+    ds_tuple = (np.asarray(df_copy), labels.to_list())
+    return tf.data.Dataset.from_tensor_slices(ds_tuple).batch(32)
 
 
 if __name__ == '__main__':
@@ -35,16 +20,10 @@ if __name__ == '__main__':
 
     df_c = pd.read_csv("data/close.csv")
     df_o = pd.read_csv("data/open.csv")
+    df_c['category'] = 0
+    df_o['category'] = 1
 
-    dataset_list = []
-
-    for line in df_c.to_numpy():
-        dataset_list.append(line_to_matrix(line, 1))
-
-    for line in df_o.to_numpy():
-        dataset_list.append(line_to_matrix(line, 2))
-
-    New_df = shuffle(pd.DataFrame(dataset_list))
+    New_df = pd.concat([df_c, df_o])
 
     train, test = train_test_split(New_df, test_size=0.2)
     test, val = train_test_split(test, test_size=0.4)
@@ -56,7 +35,7 @@ if __name__ == '__main__':
     for item in train_ds.take(2):
         print(item)
 
-    input_shape = (17, 2)
+    input_shape = (34, 1)
 
     model = tf.keras.Sequential([
         # tf.keras.layers.Conv1D(filters=64, kernel_size=2, activation='relu', input_shape=input_shape),
@@ -65,7 +44,7 @@ if __name__ == '__main__':
         tf.keras.layers.Dense(128, activation='relu'),
         tf.keras.layers.Dropout(rate=0.2),
         tf.keras.layers.Dense(64, activation='relu'),
-        tf.keras.layers.Dense(1, activation='linear')
+        tf.keras.layers.Dense(1, activation='sigmoid')
     ])
 
     model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.003),
