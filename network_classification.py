@@ -3,15 +3,18 @@ import numpy as np
 
 from sklearn.utils import shuffle
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
 
 import tensorflow as tf
 
 
 def df_to_ds(dataframe_in):
     df_copy = dataframe_in.copy()
-    labels = df_copy.pop('category')
+    labels = df_copy.pop('category_labels')
 
-    ds_tuple = (np.asarray(df_copy), labels.to_list())
+    labels = tf.keras.utils.to_categorical(labels)
+
+    ds_tuple = (np.asarray(df_copy), labels)
     return tf.data.Dataset.from_tensor_slices(ds_tuple).batch(32)
 
 
@@ -20,10 +23,33 @@ if __name__ == '__main__':
 
     df_c = pd.read_csv("data/close.csv")
     df_o = pd.read_csv("data/open.csv")
+    df_s = pd.read_csv("data/open.csv")
     df_c['category'] = 0
     df_o['category'] = 1
+    df_s['category'] = 2
 
-    New_df = pd.concat([df_c, df_o])
+    New_df = pd.concat([df_c, df_o, df_s])
+    New_df = shuffle(New_df)
+
+    New_df['category'] = New_df['category'].astype('category')
+
+    label_encoder = LabelEncoder()
+    New_df['category_labels'] = label_encoder.fit_transform(New_df['category'])
+
+    New_df.drop(["left_eye_x", "left_eye_y",
+                 "right_eye_x", "right_eye_y",
+                 "left_ear_x", "left_ear_y",
+                 "right_ear_x", "right_ear_y",
+                 "category"
+                 ], axis=1, inplace=True)
+
+    # pd.set_option('display.max_columns', None)
+    # pd.set_option('display.max_rows', None)
+    # print(New_df.head)
+
+    # X = New_df.drop('category_labels', axis=1)
+    # y = New_df['category_labels']
+    # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
     train, test = train_test_split(New_df, test_size=0.2)
     test, val = train_test_split(test, test_size=0.4)
@@ -32,31 +58,36 @@ if __name__ == '__main__':
     test_ds = df_to_ds(test)
     val_ds = df_to_ds(val)
 
-    for item in train_ds.take(2):
-        print(item)
+    # for item in train_ds.take(2):
+    #     print(item)
 
-    input_shape = (34, 1)
+    input_shape = (26, 1)
+
+    num_categories = len(New_df['category_labels'].unique())
 
     model = tf.keras.Sequential([
         # tf.keras.layers.Conv1D(filters=64, kernel_size=2, strides=2, activation='relu', input_shape=input_shape),
-        # tf.keras.layers.Flatten(input_shape=(17, 1)),
         tf.keras.layers.Flatten(input_shape=input_shape),
         tf.keras.layers.Dropout(rate=0.2),
         tf.keras.layers.Dense(128, activation='relu'),
         tf.keras.layers.Dropout(rate=0.2),
         tf.keras.layers.Dense(64, activation='relu'),
-        tf.keras.layers.Dense(1, activation='sigmoid')
+        tf.keras.layers.Dense(3, activation='softmax')
     ])
 
-    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0003),
-                  loss=tf.keras.losses.BinaryCrossentropy(),
+    model.compile(optimizer=tf.keras.optimizers.SGD(),
+                  loss=tf.keras.losses.CategoricalCrossentropy(),
                   metrics=['accuracy'])
+
+    model.summary()
 
     model.fit(train_ds,
               validation_data=test_ds,
-              epochs=50)
+              epochs=50000)
+
+    # model.fit(X_train, y_train, epochs=10, batch_size=32, validation_data=(X_test, y_test))
 
     model.save('saved_models/classification')
 
-    evaluation = model.evaluate(val_ds)
-    print(evaluation)
+    # evaluation = model.evaluate(val_ds)
+    # print(evaluation)

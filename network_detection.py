@@ -41,6 +41,7 @@ class Detection:
         self.image = tf.cast(m_image, dtype=tf.int32)
 
     def normalize_points(self, keypoints):
+        # return keypoints
         keypoints_n = []
 
         hips_center = get_center_point(keypoints[KEYPOINT_DICT['left_hip']], keypoints[KEYPOINT_DICT['right_hip']])

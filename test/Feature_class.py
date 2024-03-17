@@ -49,7 +49,7 @@ if __name__ == '__main__':
         tf.keras.layers.Dropout(0.5),
         tf.keras.layers.Dense(64, activation='relu'),
         tf.keras.layers.Dropout(0.5),
-        tf.keras.layers.Dense(2, activation='linear')
+        tf.keras.layers.Dense(1, activation='sigmoid')
     ])
 
     model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0003),
