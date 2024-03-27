@@ -7,10 +7,6 @@ import tensorflow as tf
 import tensorflow_hub as hub
 
 
-def get_center_point(p0, p1):
-    return [(p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2]
-
-
 class Detection:
 
     def __init__(self):
@@ -40,28 +36,6 @@ class Detection:
         # SavedModel format expects tensor type of int32.
         self.image = tf.cast(m_image, dtype=tf.int32)
 
-    def normalize_points(self, keypoints):
-        # return keypoints
-        keypoints_n = []
-
-        hips_center = get_center_point(keypoints[KEYPOINT_DICT['left_hip']], keypoints[KEYPOINT_DICT['right_hip']])
-        shoulders_center = get_center_point(keypoints[KEYPOINT_DICT['left_shoulder']], keypoints[KEYPOINT_DICT['right_shoulder']])
-
-        pose_center_new = get_center_point(keypoints[KEYPOINT_DICT['left_hip']], keypoints[KEYPOINT_DICT['right_hip']])
-
-        torso_size = np.linalg.norm(np.asarray(shoulders_center) - np.asarray(hips_center))
-        sz_multiplier = 2.5
-        d = keypoints - pose_center_new
-        max_dist = np.max(d)
-        tszm = torso_size*sz_multiplier
-        pose_size = 1 / max(tszm, max_dist)
-
-        for kp in keypoints:
-            new_kp = np.asarray([kp[0] - pose_center_new[0], kp[1] - pose_center_new[1]]) * pose_size
-            keypoints_n.append(new_kp)
-
-        return keypoints_n
-
     def predict(self):
         outputs = self.model(self.image)
         keypoints_with_scores = outputs['output_0'].numpy()[0][0]
@@ -69,9 +43,9 @@ class Detection:
 
         for kws in keypoints_with_scores:
             if kws[2] > 0.2:
-                detection.append(kws[:2])
+                detection.append(kws)
             else:
-                detection.append([-1, -1])
+                detection.append([-1, -1, 0])
 
         return np.asarray(detection)
 
@@ -112,11 +86,11 @@ if __name__ == '__main__':
         for f in tqdm.tqdm(os.listdir(class_root)):
             detection_network.load_image(os.path.join(class_root, f))
             detected = detection_network.predict()
-            normalized = detection_network.normalize_points(detected)
-            all_points.append(normalized)
+            # normalized = detection_network.normalize_points(detected)
+            all_points.append(np.asarray(detected).flatten())
 
         if len(all_points) > 0:
-            reshaped_array = np.asarray(all_points).reshape(-1, 17 * 2)
+            reshaped_array = np.asarray(all_points)
             points_df = pd.DataFrame(reshaped_array)
-            points_df.columns = column_names
+            # points_df.columns = column_names
             points_df.to_csv(class_root + '.csv', index=False)

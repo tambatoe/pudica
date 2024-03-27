@@ -6,6 +6,10 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 
 import tensorflow as tf
+import tensorflow_hub as hub
+from tensorflow import keras
+
+from classification_support import landmarks_to_embedding
 
 
 def df_to_ds(dataframe_in):
@@ -36,12 +40,8 @@ if __name__ == '__main__':
     label_encoder = LabelEncoder()
     New_df['category_labels'] = label_encoder.fit_transform(New_df['category'])
 
-    New_df.drop(["left_eye_x", "left_eye_y",
-                 "right_eye_x", "right_eye_y",
-                 "left_ear_x", "left_ear_y",
-                 "right_ear_x", "right_ear_y",
-                 "category"
-                 ], axis=1, inplace=True)
+    New_df.drop(["category"], axis=1, inplace=True)
+    New_df.info()
 
     # pd.set_option('display.max_columns', None)
     # pd.set_option('display.max_rows', None)
@@ -61,33 +61,48 @@ if __name__ == '__main__':
     # for item in train_ds.take(2):
     #     print(item)
 
-    input_shape = (26, 1)
+    class_names = ['open', 'close', 'rest']
 
-    num_categories = len(New_df['category_labels'].unique())
+    inputs = tf.keras.Input(shape=(51))
+    embedding = landmarks_to_embedding(inputs)
 
-    model = tf.keras.Sequential([
-        # tf.keras.layers.Conv1D(filters=64, kernel_size=2, strides=2, activation='relu', input_shape=input_shape),
-        tf.keras.layers.Flatten(input_shape=input_shape),
-        tf.keras.layers.Dropout(rate=0.2),
-        tf.keras.layers.Dense(128, activation='relu'),
-        tf.keras.layers.Dropout(rate=0.2),
-        tf.keras.layers.Dense(64, activation='relu'),
-        tf.keras.layers.Dense(3, activation='softmax')
-    ])
+    layer = keras.layers.Dense(128, activation=tf.nn.relu6)(embedding)
+    layer = keras.layers.Dropout(0.5)(layer)
+    layer = keras.layers.Dense(64, activation=tf.nn.relu6)(layer)
+    layer = keras.layers.Dropout(0.5)(layer)
+    outputs = keras.layers.Dense(len(class_names), activation="softmax")(layer)
 
-    model.compile(optimizer=tf.keras.optimizers.SGD(),
-                  loss=tf.keras.losses.CategoricalCrossentropy(),
-                  metrics=['accuracy'])
-
+    model = keras.Model(inputs, outputs)
     model.summary()
 
+    model.compile(
+        optimizer='adam',
+        loss='categorical_crossentropy',
+        metrics=['accuracy']
+    )
+
+    # Add a checkpoint callback to store the checkpoint that has the highest
+    # validation accuracy.
+    checkpoint_path = "weights.best.hdf5"
+    checkpoint = keras.callbacks.ModelCheckpoint(checkpoint_path,
+                                                 monitor='val_accuracy',
+                                                 verbose=1,
+                                                 save_best_only=True,
+                                                 mode='max')
+    # earlystopping = keras.callbacks.EarlyStopping(monitor='val_accuracy',
+    #                                               patience=20)
+
     model.fit(train_ds,
+              epochs=20000,
+              batch_size=16,
               validation_data=test_ds,
-              epochs=50000)
+              callbacks=[checkpoint
+                  # , earlystopping
+                         ])
 
-    # model.fit(X_train, y_train, epochs=10, batch_size=32, validation_data=(X_test, y_test))
 
-    model.save('saved_models/classification')
+    # model.save('saved_models/classification')
 
     # evaluation = model.evaluate(val_ds)
     # print(evaluation)
+
