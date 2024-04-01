@@ -89,11 +89,11 @@ if __name__ == '__main__':
                                                  verbose=1,
                                                  save_best_only=True,
                                                  mode='max')
-    # earlystopping = keras.callbacks.EarlyStopping(monitor='val_accuracy',
-    #                                               patience=20)
+    earlystopping = keras.callbacks.EarlyStopping(monitor='val_accuracy',
+                                                  patience=20)
 
     model.fit(train_ds,
-              epochs=20000,
+              epochs=3,
               batch_size=16,
               validation_data=test_ds,
               callbacks=[checkpoint
@@ -101,8 +101,8 @@ if __name__ == '__main__':
                          ])
 
 
-    # model.save('saved_models/classification')
+    model.save('saved_models/classification')
 
-    # evaluation = model.evaluate(val_ds)
-    # print(evaluation)
+    evaluation = model.evaluate(val_ds)
+    print(evaluation)
 
