@@ -10,8 +10,12 @@ import tensorflow_hub as hub
 class Detection:
 
     def __init__(self):
-        self.model = hub.load("https://tfhub.dev/google/movenet/singlepose/lightning/4")
-        self.model = self.model.signatures['serving_default']
+        # self.model = hub.load("https://tfhub.dev/google/movenet/singlepose/lightning/4")
+        # self.model = tf.keras.models.load_model('saved_models/movenet_light_4/saved_model.pb')
+        # self.model = self.model.signatures['serving_default']
+
+        self.model = tf.lite.Interpreter(model_path="saved_models/movenet_light_4/model.tflite")
+        self.model.allocate_tensors()
 
         self.image = None
 
@@ -20,9 +24,10 @@ class Detection:
         m_img = tf.convert_to_tensor(img)
         m_image = tf.expand_dims(m_img, axis=0)
         m_image = tf.image.resize_with_pad(m_image, input_size, input_size)
-
-        # SavedModel format expects tensor type of int32.
-        self.image = tf.cast(m_image, dtype=tf.int32)
+        self.image = m_image
+        #
+        # # SavedModel format expects tensor type of int32.
+        # self.image = tf.cast(m_image, dtype=tf.int32)
 
     def load_image(self, file_path):
         # TODO: aggiungere anche il modello di conversione immagine
@@ -37,8 +42,19 @@ class Detection:
         self.image = tf.cast(m_image, dtype=tf.int32)
 
     def predict(self):
-        outputs = self.model(self.image)
-        keypoints_with_scores = outputs['output_0'].numpy()[0][0]
+        # outputs = self.model(self.image)
+        # keypoints_with_scores = outputs['output_0'].numpy()[0][0]
+
+        # TF Lite format expects tensor type of uint8.
+        input_image = tf.cast(self.image, dtype=tf.uint8)
+        input_details = self.model.get_input_details()
+        output_details = self.model.get_output_details()
+        self.model.set_tensor(input_details[0]['index'], input_image.numpy())
+        # Invoke inference.
+        self.model.invoke()
+        # Get the model prediction.
+        keypoints_with_scores = self.model.get_tensor(output_details[0]['index'])[0][0]
+
         detection = []
 
         for kws in keypoints_with_scores:
@@ -69,7 +85,7 @@ if __name__ == '__main__':
     # model = load()
 
     # il main è usato per addestrare la rete.
-    DATASET_ROOT = 'data'
+    DATASET_ROOT = '/run/media/tambatoe/PC_STORAGE/Poses/'
     # otteniamo il nome delle classi, partendo dalla root del dataset
     classes = []
     for f in os.listdir(DATASET_ROOT):

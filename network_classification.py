@@ -12,9 +12,9 @@ from tensorflow import keras
 from classification_support import landmarks_to_embedding
 
 
-def df_to_ds(dataframe_in):
+def df_to_ds(dataframe_in, label_column_name):
     df_copy = dataframe_in.copy()
-    labels = df_copy.pop('category_labels')
+    labels = df_copy.pop(label_column_name)
 
     labels = tf.keras.utils.to_categorical(labels)
 
@@ -25,14 +25,12 @@ def df_to_ds(dataframe_in):
 if __name__ == '__main__':
     tf.config.set_visible_devices([], 'GPU')
 
-    df_c = pd.read_csv("data/close.csv")
-    df_o = pd.read_csv("data/open.csv")
-    df_s = pd.read_csv("data/open.csv")
+    df_c = pd.read_csv("/run/media/tambatoe/PC_STORAGE/Poses/close.csv")
+    df_o = pd.read_csv("/run/media/tambatoe/PC_STORAGE/Poses/open.csv")
     df_c['category'] = 0
     df_o['category'] = 1
-    df_s['category'] = 2
 
-    New_df = pd.concat([df_c, df_o, df_s])
+    New_df = pd.concat([df_c, df_o])
     New_df = shuffle(New_df)
 
     New_df['category'] = New_df['category'].astype('category')
@@ -54,14 +52,14 @@ if __name__ == '__main__':
     train, test = train_test_split(New_df, test_size=0.2)
     test, val = train_test_split(test, test_size=0.4)
 
-    train_ds = df_to_ds(train)
-    test_ds = df_to_ds(test)
-    val_ds = df_to_ds(val)
+    train_ds = df_to_ds(train, 'category_labels')
+    test_ds = df_to_ds(test, 'category_labels')
+    val_ds = df_to_ds(val, 'category_labels')
 
     # for item in train_ds.take(2):
     #     print(item)
 
-    class_names = ['open', 'close', 'rest']
+    class_names = ['open', 'close']
 
     inputs = tf.keras.Input(shape=(51))
     embedding = landmarks_to_embedding(inputs)
@@ -75,8 +73,14 @@ if __name__ == '__main__':
     model = keras.Model(inputs, outputs)
     model.summary()
 
+    initial_learning_rate = 0.0003
+    total_epochs = 20000
+    cosine_decay = tf.keras.experimental.CosineDecay(initial_learning_rate, total_epochs)
+    # optimizer = tf.keras.optimizers.Adam(learning_rate=cosine_decay)
+    optimizer = tf.keras.optimizers.Adam(initial_learning_rate)
+
     model.compile(
-        optimizer='adam',
+        optimizer=optimizer,
         loss='categorical_crossentropy',
         metrics=['accuracy']
     )
@@ -90,19 +94,17 @@ if __name__ == '__main__':
                                                  save_best_only=True,
                                                  mode='max')
     earlystopping = keras.callbacks.EarlyStopping(monitor='val_accuracy',
-                                                  patience=20)
+                                                  patience=50)
 
     model.fit(train_ds,
-              epochs=3,
+              epochs=total_epochs,
               batch_size=16,
               validation_data=test_ds,
-              callbacks=[checkpoint
-                  # , earlystopping
+              callbacks=[checkpoint,  earlystopping,
+                         tf.keras.callbacks.TensorBoard()
                          ])
-
 
     model.save('saved_models/classification')
 
     evaluation = model.evaluate(val_ds)
     print(evaluation)
-

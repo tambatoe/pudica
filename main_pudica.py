@@ -12,6 +12,7 @@ from threading import Thread
 def capture_f():
     global do_loop
     global capture_inference_q
+    global last_frame_q
 
     vid = cv2.VideoCapture(0)
 
@@ -22,12 +23,10 @@ def capture_f():
         try:
             # TODO resize here, reduce memory footprint
             capture_inference_q.put(frame, block=False)
+            last_frame_q.put(frame, block=False)
         except:
             # print("skip frame enqueue ", i)
             i += 1
-
-        # cv2.imshow("f", frame)
-        # cv2.waitKey(10)
 
     vid.release()
 
@@ -38,7 +37,7 @@ def pose_detect_f():
     global inference_pose_q
 
     detection = Detection()
-
+    print("detection start")
     i = 0
     while do_loop:
         frame = capture_inference_q.get(block=True, timeout=None)
@@ -56,6 +55,8 @@ def pose_eval_f():
     global do_loop
     global inference_pose_q
     global pose_resultev_q
+
+    print("eval start")
 
     classification = tf.keras.models.load_model('weights.best.hdf5')
 
@@ -76,14 +77,25 @@ def pose_eval_f():
 def result_evaluation_f():
     global do_loop
     global pose_resultev_q
+    global last_frame_q
 
     meter_size = [16, 9]
 
+    print("result eval start")
+
+    b = 0
+    g = 0
+    r = 0
+
+    operation_avg = 0.5
 
     while do_loop:
         kp, result = pose_resultev_q.get(block=True, timeout=None)
 
-        operation = np.argmax(result, axis=0)
+        # operation = np.argmax(result[0], axis=0)
+        operation_avg += 0.05 if result[0][0] < result[0][1] else -0.05
+        operation_avg = np.clip(operation_avg, 0, 1)
+
         kpma = np.ma.masked_where(kp == -1, kp)
         min_x = np.min(kpma[:, 0], axis=0)
         max_x = np.max(kp[:, 0], axis=0)
@@ -93,7 +105,27 @@ def result_evaluation_f():
         p0 = (np.asarray([min_x, min_y]) - 0.5) * meter_size  # normalize center of image
         p1 = (np.asarray([max_x, max_y]) - 0.5) * meter_size
 
-        print(p0, p1)
+
+        print(f"operation {operation_avg}")
+
+        try:
+            frame = last_frame_q.get(block=False, timeout=1)
+            height, width, _ = frame.shape
+
+            center = np.array([width * (min_y + max_y) / 2, height * (min_x + max_x) / 2])
+
+            g = g + 2 if operation_avg > 0.5 else g - 2
+            g = min(255, max(0, g))
+            r = 255 - g
+
+            cv2.circle(frame, center.astype(np.int32), 20, (b, g, r), -1)
+            cv2.namedWindow("result")
+            cv2.imshow("result", frame)
+            cv2.waitKey(2)
+
+        except:
+            print("cant dequeue")
+        # print(p0, p1)
 
 
 if __name__ == '__main__':
@@ -102,6 +134,7 @@ if __name__ == '__main__':
     capture_inference_q = queue.Queue(maxsize=3)
     inference_pose_q = queue.Queue(maxsize=3)
     pose_resultev_q = queue.Queue(maxsize=3)
+    last_frame_q = queue.Queue(maxsize=3)
 
     do_loop = True
 
@@ -118,6 +151,8 @@ if __name__ == '__main__':
     # pose_eval_t.join()
     while do_loop:
         time.sleep(1)
+
+        # print("cose")
     #     t0 = time.time()
     #     # Capture the video frame
     #     # by frame

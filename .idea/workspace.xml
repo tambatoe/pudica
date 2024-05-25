@@ -4,9 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="663de708-a009-4aa8-8eab-54722926917c" name="Changes" comment="Classification working">
+    <list default="true" id="663de708-a009-4aa8-8eab-54722926917c" name="Changes" comment="Post processing result for bbox and operation">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main_pudica.py" beforeDir="false" afterPath="$PROJECT_DIR$/main_pudica.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network_classification.py" beforeDir="false" afterPath="$PROJECT_DIR$/network_classification.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network_detection.py" beforeDir="false" afterPath="$PROJECT_DIR$/network_detection.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -23,6 +25,10 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/../ultralytics_venv/lib64/python3.10/site-packages/pandas/core/internals/base.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/../ultralytics_venv/lib64/python3.10/site-packages/tensorflow/lite/python/interpreter.py" root0="SKIP_INSPECTION" />
+  </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
@@ -35,27 +41,29 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Python.Feature_class.executor&quot;: &quot;Debug&quot;,
-    &quot;Python.feature_det.executor&quot;: &quot;Run&quot;,
-    &quot;Python.main.executor&quot;: &quot;Run&quot;,
-    &quot;Python.network_classification.executor&quot;: &quot;Run&quot;,
-    &quot;Python.network_detection.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/tambatoe/Workspace/Pudica_treannidopo&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;editor.preferences.tabs&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python.Feature_class.executor": "Debug",
+    "Python.feature_det.executor": "Run",
+    "Python.main.executor": "Run",
+    "Python.main_pudica.executor": "Debug",
+    "Python.network_classification.executor": "Run",
+    "Python.network_detection.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "main",
+    "last_opened_file_path": "/home/tambatoe/Workspace/Pudica_treannidopo",
+    "settings.editor.selected.configurable": "preferences.pluginManager"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/saved_models/movenet_light_4" />
       <recent name="$PROJECT_DIR$/test" />
       <recent name="$PROJECT_DIR$/data/close" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.network_classification">
+  <component name="RunManager" selected="Python.main_pudica">
     <configuration name="Feature_class" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Pudica_treannidopo" />
       <option name="ENV_FILES" value="" />
@@ -92,6 +100,28 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test/feature_det.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="main_pudica" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Pudica_treannidopo" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main_pudica.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -146,17 +176,18 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.main_pudica" />
         <item itemvalue="Python.network_classification" />
         <item itemvalue="Python.network_detection" />
-        <item itemvalue="Python.Feature_class" />
         <item itemvalue="Python.feature_det" />
+        <item itemvalue="Python.Feature_class" />
       </list>
     </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-d68999036c7f-d3b881c8e49f-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-233.14475.56" />
+        <option value="bundled-python-sdk-babbdf50b680-746f403e7f0c-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-241.15989.155" />
       </set>
     </attachedChunks>
   </component>
@@ -209,7 +240,55 @@
       <option name="project" value="LOCAL" />
       <updated>1710275565317</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="Completed data pipeline">
+      <option name="closed" value="true" />
+      <created>1710282697317</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1710282697317</updated>
+    </task>
+    <task id="LOCAL-00007" summary="KP normalization">
+      <option name="closed" value="true" />
+      <created>1710600276640</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1710600276640</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Moved to multiclass. Norm is not working">
+      <option name="closed" value="true" />
+      <created>1710679079755</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1710679079755</updated>
+    </task>
+    <task id="LOCAL-00009" summary="Update classification network.">
+      <option name="closed" value="true" />
+      <created>1711568250234</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1711568250234</updated>
+    </task>
+    <task id="LOCAL-00010" summary="Producer consumer multithreaded">
+      <option name="closed" value="true" />
+      <created>1711965478069</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1711965478069</updated>
+    </task>
+    <task id="LOCAL-00011" summary="Post processing result for bbox and operation">
+      <option name="closed" value="true" />
+      <created>1711967381148</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1711967381148</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -218,6 +297,33 @@
     <MESSAGE value="refactor network detection" />
     <MESSAGE value="Add classification" />
     <MESSAGE value="Classification working" />
-    <option name="LAST_COMMIT_MESSAGE" value="Classification working" />
+    <MESSAGE value="Completed data pipeline" />
+    <MESSAGE value="KP normalization" />
+    <MESSAGE value="Moved to multiclass. Norm is not working" />
+    <MESSAGE value="Update classification network." />
+    <MESSAGE value="Producer consumer multithreaded" />
+    <MESSAGE value="Post processing result for bbox and operation" />
+    <option name="LAST_COMMIT_MESSAGE" value="Post processing result for bbox and operation" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/network_classification.py</url>
+          <line>61</line>
+          <option name="timeStamp" value="12" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/network_classification.py</url>
+          <line>41</line>
+          <option name="timeStamp" value="14" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/main_pudica.py</url>
+          <line>120</line>
+          <option name="timeStamp" value="21" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>
