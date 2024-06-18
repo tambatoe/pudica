@@ -18,8 +18,10 @@ class Detection:
         self.model.allocate_tensors()
 
         self.image = None
+        self.draw_image = None
 
     def set_image(self, img):
+        self.draw_image = img
         input_size = 192
         m_img = tf.convert_to_tensor(img)
         m_image = tf.expand_dims(m_img, axis=0)
@@ -63,6 +65,23 @@ class Detection:
             else:
                 detection.append([-1, -1, 0])
 
+        print(detection)
+
+        h,w,_ = self.draw_image.shape
+        import random
+
+        # Generate a tuple with three random values between 0 and 255
+
+        for d in detection:
+            color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+            y = int(d[0] * h)
+            x = int(d[1] * w)
+            cv2.circle(self.draw_image, (x,y), 5, color, -1)
+
+        # cv2.imwrite("/home/tambatoe/img0.jpg", self.draw_image)
+        # cv2.namedWindow("bone", cv2.WINDOW_NORMAL)
+        # cv2.imshow("bone", self.draw_image)
+        # cv2.waitKey(30)
         return np.asarray(detection)
 
 

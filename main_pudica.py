@@ -7,7 +7,7 @@ import tensorflow as tf
 
 import queue
 from threading import Thread
-
+from hwController import HwController
 
 def capture_f():
     global do_loop
@@ -19,7 +19,7 @@ def capture_f():
     i = 0
     while do_loop:
         ret, frame = vid.read()
-
+        time.sleep(0.03)
         try:
             # TODO resize here, reduce memory footprint
             capture_inference_q.put(frame, block=False)
@@ -89,6 +89,9 @@ def result_evaluation_f():
 
     operation_avg = 0.5
 
+    center_list = []
+    hw_controller = HwController()
+
     while do_loop:
         kp, result = pose_resultev_q.get(block=True, timeout=None)
 
@@ -97,29 +100,36 @@ def result_evaluation_f():
         operation_avg = np.clip(operation_avg, 0, 1)
 
         kpma = np.ma.masked_where(kp == -1, kp)
-        min_x = np.min(kpma[:, 0], axis=0)
-        max_x = np.max(kp[:, 0], axis=0)
-        min_y = np.min(kpma[:, 1], axis=0)
-        max_y = np.max(kp[:, 1], axis=0)
+        min_y = np.min(kpma[:, 0], axis=0)
+        max_y = np.max(kp[:, 0], axis=0)
+        min_x = np.min(kpma[:, 1], axis=0)
+        max_x = np.max(kp[:, 1], axis=0)
 
         p0 = (np.asarray([min_x, min_y]) - 0.5) * meter_size  # normalize center of image
         p1 = (np.asarray([max_x, max_y]) - 0.5) * meter_size
 
+        hw_controller.add_detection(p0, p1, operation_avg)
+        hw_controller.actuate()
 
-        print(f"operation {operation_avg}")
+        # print(f"operation {operation_avg}")
 
         try:
             frame = last_frame_q.get(block=False, timeout=1)
             height, width, _ = frame.shape
 
-            center = np.array([width * (min_y + max_y) / 2, height * (min_x + max_x) / 2])
+            center_p = np.array([width * (min_x + max_x) / 2, height * (min_y + max_y) / 2])
+            center_list.append(center_p)
+            if len(center_list) > 60:
+                center_list.pop(0)
+
+            center = np.average(center_list, axis=0)
 
             g = g + 2 if operation_avg > 0.5 else g - 2
             g = min(255, max(0, g))
             r = 255 - g
 
             cv2.circle(frame, center.astype(np.int32), 20, (b, g, r), -1)
-            cv2.namedWindow("result")
+            cv2.namedWindow("result", cv2.WINDOW_NORMAL)
             cv2.imshow("result", frame)
             cv2.waitKey(2)
 
