@@ -1,69 +1,42 @@
+from functools import partial
+
 import numpy
 import numpy as np
 
+from hw_math_support import *
+
 
 class SingleArm:
-    '''
-    p_anchor è il punto di ancoraggio, può essere fisso o l'estremità di un altro braccio.
-    '''
 
-    def __init__(self, p_anchor, length):
-        self.anchor_point = p_anchor
-        self.theta = 0
-        self.free_point = p_anchor
+    def __init__(self, origin, length):
+        origin = np.array(origin)
+        self.origin = origin
         self.length = length
-        self.free_point[1] += length
+        self.theta = 0
+        self.point1 = origin + [0, length]
 
+        self.min_distance = 10
 
-def line_eq(point1, point2):
-    # Calculate the slope (m)
-    m = (point2[1] - point1[1]) / (point2[0] - point1[0])
-    # Calculate the y-intercept (b)
-    b = point1[1] - m * point1[0]
-    return m, b
+    def rotate(self, person_point):
+        ''' dati
+             pa = anchor point (origin)
+             pl = punto libero
+             pe = punto persona
 
+             AE = distanza anchor persona
+             LE = distanza persona punto libero pari alla distanza minima persona - braccio
+             AL = lunghezza segmento
+        '''
 
-def calculate_angle_between_lines(m1, m2):
-    # Step 3: Calculate the angle in radians
-    theta_radians = np.arctan(abs((m1 - m2) / (1 + m1 * m2)))
+        # retta passante per pa - pe il valore di m in gradi servirà per ottenere l'angolo totale del braccio
+        m, q = line_eq (self.origin, person_point)
 
-    # Step 4: Convert the angle from radians to degrees
-    theta_degrees = np.degrees(theta_radians)
-
-    return theta_degrees
+        pass
 
 
 class PudicaStructure:
 
-    def calc_arm_rotation(self, person_point, arm):
-        # d1 dist punto noto / persona; d2 distanza punto incognita / persona
-        # l1 e l2 le linee che passano per i 2 punti
-        # theta0 angolo interno
-        # theta1 angolo finale
-
-        # distanza tra punto noto e persona
-        d1 = numpy.linalg.norm(person_point - arm[0].anchor_point)
-        l1_m, l1_q = line_eq(person_point, arm[0].anchor_point)
-
-        d2 = 100 # distanza minima persona/snodo
-        l2_m, l2_q = line_eq(person_point, arm[1].free_point)
-
-        theta0 = calculate_angle_between_lines(l1_m, l2_m)
-
-        # lunghezza del segmento
-        c = arm[0].length
-        # Calcola l'angolo opposto al lato a
-        cos_alpha = (d2 ** 2 + c ** 2 - d1 ** 2) / (2 * d2 * c)
-        alpha_radians = np.arccos(cos_alpha)
-        alpha_degrees = np.degrees(alpha_radians)
-
-
-
-    def calc_rotations(self, person_point):
-        self.calc_arm_rotation(person_point, self.arms_left)
-
     def __init__(self):
-
         l1 = 88.59
         l2 = 122.82
         l3 = 88.59
@@ -79,23 +52,36 @@ class PudicaStructure:
                            SingleArm([l1, 0], l2),
                            SingleArm([l1 + l2, 0], l3)]
 
+    def update_rotations(self, person_point):
+        for i in range(0, 3):
+            self.arms_left[i].rotate(person_point)
+            self.arms_right[i].rotate(person_point)
+
 
 
 class HwController:
     def __init__(self):
+        self.person_bbox_left = None
+        self.person_bbox_right = None
         self.open_percent_left = 100
         self.open_percent_right = 100
         self.limit_left = 0
         self.limit_right = 1
 
-    def add_detection(self, p0, p1, operation):
-        self.limit_left = p0[0]
-        self.limit_right = p1[0]
+        self.structure = PudicaStructure()
+
+    def add_detection(self, person_p0, person_p1, operation):
+        self.person_bbox_left = np.array( person_p0)
+        self.person_bbox_right = np.array(person_p1)
 
         if operation > 0.5:
             print('opening')
 
-    def actuate(self):
+        center = (self.person_bbox_left + self.person_bbox_right) / 2
+
+        self.structure.update_rotations(center)
+
+    def move_physical(self):
         # deform points
         # estimate point in real space
         # calculate points position
@@ -105,7 +91,6 @@ class HwController:
 
 
 if __name__ == '__main__':
-    # Esempio di utilizzo:
-    sa = SingleArm([1, 1], 5)
-    sa.rotate([4, 4])
-    print("Punto libero ruotato:", sa.free_point)
+    controller = HwController()
+
+    controller.add_detection([0.49, 0.5],  [0.51, 0.5], 0.3)
