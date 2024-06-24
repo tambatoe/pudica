@@ -1,4 +1,5 @@
 import numpy as np
+import math
 
 
 def line_eq(point1, point2):
@@ -17,6 +18,13 @@ def line_eq(point1, point2):
     return np.rad2deg(np.arctan(m)), b
 
 
+def point_distance(p0, p1):
+    x0, y0 = p0
+    x1, y1 = p1
+    distance = math.sqrt((x1 - x0) ** 2 + (y1 - y0) ** 2)
+    return distance
+
+
 def angle_between_lines(m1, m2):
     # Step 3: Calculate the angle in radians
     theta_radians = np.arctan(abs((m1 - m2) / (1 + m1 * m2)))
@@ -27,8 +35,26 @@ def angle_between_lines(m1, m2):
     return theta_degrees
 
 
-def calc_arm_rotation(center):
-    return 0
+def find_point_on_line(x0, y0, m, L):
+    """
+    Trova le coordinate del punto a distanza L dal punto (x0, y0) su una retta con coefficiente angolare m.
+
+    Parametri:
+    x0 (float): Coordinata x del punto A.
+    y0 (float): Coordinata y del punto A.
+    m (float): Coefficiente angolare della retta.
+    L (float): Distanza tra il punto A e il punto cercato B.
+
+    Ritorna:
+    tuple: Coordinate del punto B (x1, y1).
+    """
+    delta_x = L / np.sqrt(1 + m ** 2)
+    delta_y = m * delta_x
+
+    x1 = x0 + delta_x
+    y1 = y0 + delta_y
+
+    return (x1, y1)
 
 '''
     def calc_arm_rotation(self, person_point, arm):

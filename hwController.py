@@ -29,9 +29,21 @@ class SingleArm:
         '''
 
         # retta passante per pa - pe il valore di m in gradi servirà per ottenere l'angolo totale del braccio
-        m, q = line_eq (self.origin, person_point)
+        m, q = line_eq(self.origin, person_point)
+        LE = 3 # 0.05
+        AE = 3 # point_distance(self.origin, person_point)
+        AL = 3 # 0.3 # self.length
 
-        pass
+        D = AE ** 2 + AL ** 2 - LE ** 2
+        d = (2 * AE * AL)
+        A = np.rad2deg(np.arccos(D / d))
+
+        self.theta = A + m
+
+        p1 = find_point_on_line(self.origin[0], self.origin[1], m, self.length)
+        self.point1 = np.array(p1)
+
+        return self.theta, self.point1
 
 
 class PudicaStructure:
@@ -58,7 +70,6 @@ class PudicaStructure:
             self.arms_right[i].rotate(person_point)
 
 
-
 class HwController:
     def __init__(self):
         self.person_bbox_left = None
@@ -71,7 +82,7 @@ class HwController:
         self.structure = PudicaStructure()
 
     def add_detection(self, person_p0, person_p1, operation):
-        self.person_bbox_left = np.array( person_p0)
+        self.person_bbox_left = np.array(person_p0)
         self.person_bbox_right = np.array(person_p1)
 
         if operation > 0.5:
@@ -93,4 +104,4 @@ class HwController:
 if __name__ == '__main__':
     controller = HwController()
 
-    controller.add_detection([0.49, 0.5],  [0.51, 0.5], 0.3)
+    controller.add_detection([0.49, 0.5], [0.51, 0.5], 0.3)
