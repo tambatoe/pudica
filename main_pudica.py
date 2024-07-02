@@ -9,6 +9,7 @@ import queue
 from threading import Thread
 from hwController import HwController
 
+
 def capture_f():
     global do_loop
     global capture_inference_q
@@ -74,6 +75,13 @@ def pose_eval_f():
             i += 1
 
 
+def loop_phisical_movement(hw_controller):
+    global do_loop
+
+    while do_loop:
+        hw_controller.move_physical()
+
+
 def result_evaluation_f():
     global do_loop
     global pose_resultev_q
@@ -92,6 +100,9 @@ def result_evaluation_f():
     center_list = []
     hw_controller = HwController()
 
+    thread = Thread(target=loop_phisical_movement, args=(hw_controller,))
+    thread.start()
+
     while do_loop:
         kp, result = pose_resultev_q.get(block=True, timeout=None)
 
@@ -109,7 +120,6 @@ def result_evaluation_f():
         p1 = (np.asarray([max_x, max_y]) - 0.5) * meter_size
 
         hw_controller.add_detection(p0, p1, operation_avg)
-        hw_controller.actuate()
 
         # print(f"operation {operation_avg}")
 

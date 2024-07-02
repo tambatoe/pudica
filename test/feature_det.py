@@ -78,14 +78,14 @@ if __name__ == '__main__':
         if os.path.isdir(os.path.join(DATASET_ROOT, f)):
             classes.append(f)
 
-    print(classes)
+    # print(classes)
 
     for subdir in classes:
         all_points = []
         class_root = os.path.join(DATASET_ROOT, subdir)
-        print(class_root)
+        # print(class_root)
         for f in tqdm.tqdm(os.listdir(class_root)):
-            print(f)
+            # print(f)
             image = load_image(os.path.join(class_root, f))
 
             t0 = time.time()
@@ -136,11 +136,11 @@ if __name__ == '__main__':
             all_points.append(moved_center)
 
             t1 = time.time()
-            print(f"time {t1 - t0}")
+            # print(f"time {t1 - t0}")
 
         if len(all_points) > 0:
             reshaped_array = np.asarray(all_points).reshape(-1, 17 * 2)
             points_df = pd.DataFrame(reshaped_array)
             points_df.columns = column_names
             points_df.to_csv(class_root + '.csv', index=False)
-            print(points_df.head())
+            # print(points_df.head())

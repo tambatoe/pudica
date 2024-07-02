@@ -65,7 +65,7 @@ class Detection:
             else:
                 detection.append([-1, -1, 0])
 
-        print(detection)
+        # print(detection)
 
         h,w,_ = self.draw_image.shape
         import random

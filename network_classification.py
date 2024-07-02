@@ -107,4 +107,4 @@ if __name__ == '__main__':
     model.save('saved_models/classification')
 
     evaluation = model.evaluate(val_ds)
-    print(evaluation)
+    # print(evaluation)

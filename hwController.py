@@ -4,6 +4,7 @@ import numpy
 import numpy as np
 
 from hw_math_support import *
+from enum import Enum
 
 
 class SingleArm:
@@ -30,9 +31,9 @@ class SingleArm:
 
         # retta passante per pa - pe il valore di m in gradi servirà per ottenere l'angolo totale del braccio
         m, q = line_eq(self.origin, person_point)
-        LE = 3 # 0.05
-        AE = 3 # point_distance(self.origin, person_point)
-        AL = 3 # 0.3 # self.length
+        LE = 3  # 0.05
+        AE = 3  # point_distance(self.origin, person_point)
+        AL = 3  # 0.3 # self.length
 
         D = AE ** 2 + AL ** 2 - LE ** 2
         d = (2 * AE * AL)
@@ -65,10 +66,30 @@ class PudicaStructure:
                            SingleArm([l1 + l2, 0], l3)]
 
     def update_rotations(self, person_point):
-        for i in range(0, 3):
-            self.arms_left[i].rotate(person_point)
-            self.arms_right[i].rotate(person_point)
+        rot_l = []
+        rot_r = []
 
+        point_l = self.arms_left[0].origin
+        point_r = self.arms_right[0].origin
+        for i in range(0, 3):
+            self.arms_left[i].origin = point_l
+            rot, point_l = self.arms_left[i].rotate(person_point)
+            rot_l.append(rot)
+
+            self.arms_right[i].origin = point_r
+            rot, point_r = self.arms_right[i].rotate(person_point)
+            rot_r.append(rot)
+
+        return rot_l, rot_r
+
+
+class FsmStatus(Enum):
+    IDLE = 1
+    OPENING = 2
+    OPEN = 3
+    PLAY = 4
+    CLOSING = 5
+    CLOSED = 6
 
 class HwController:
     def __init__(self):
@@ -80,6 +101,9 @@ class HwController:
         self.limit_right = 1
 
         self.structure = PudicaStructure()
+
+        self.status = FsmStatus.IDLE
+        self.nextStatus = FsmStatus.IDLE
 
     def add_detection(self, person_p0, person_p1, operation):
         self.person_bbox_left = np.array(person_p0)
@@ -93,13 +117,23 @@ class HwController:
         self.structure.update_rotations(center)
 
     def move_physical(self):
-        # deform points
-        # estimate point in real space
-        # calculate points position
-        # apply points
-        # send command to the hardware actuator controller
-        pass
 
+        self.status = self.nextStatus
+        if self.status == FsmStatus.IDLE:
+            print("System is idle.")
+        elif self.status == FsmStatus.OPENING:
+            print("System is opening.")
+        elif self.status == FsmStatus.OPEN:
+            print("System is open.")
+        elif self.status == FsmStatus.PLAY:
+            print("System is playing.")
+        elif self.status == FsmStatus.CLOSING:
+            print("System is closing.")
+        elif self.status == FsmStatus.CLOSED:
+            print("System is closed.")
+        else:
+            print("Unknown status.")
+            self.nextStatus = FsmStatus.IDLE
 
 if __name__ == '__main__':
     controller = HwController()

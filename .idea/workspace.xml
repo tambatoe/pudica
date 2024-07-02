@@ -4,11 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="663de708-a009-4aa8-8eab-54722926917c" name="Changes" comment="Post processing result for bbox and operation">
+    <list default="true" id="663de708-a009-4aa8-8eab-54722926917c" name="Changes" comment="rotation and translation done">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hwController.py" beforeDir="false" afterPath="$PROJECT_DIR$/hwController.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main_pudica.py" beforeDir="false" afterPath="$PROJECT_DIR$/main_pudica.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network_classification.py" beforeDir="false" afterPath="$PROJECT_DIR$/network_classification.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network_detection.py" beforeDir="false" afterPath="$PROJECT_DIR$/network_detection.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/feature_det.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/feature_det.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/weights.best.hdf5" beforeDir="false" afterPath="$PROJECT_DIR$/weights.best.hdf5" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -45,6 +48,7 @@
   "keyToString": {
     "Python.Feature_class.executor": "Debug",
     "Python.feature_det.executor": "Run",
+    "Python.hwController.executor": "Run",
     "Python.main.executor": "Run",
     "Python.main_pudica.executor": "Debug",
     "Python.network_classification.executor": "Run",
@@ -64,28 +68,6 @@
     </key>
   </component>
   <component name="RunManager" selected="Python.main_pudica">
-    <configuration name="Feature_class" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="Pudica_treannidopo" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test/Feature_class.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <configuration name="feature_det" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Pudica_treannidopo" />
       <option name="ENV_FILES" value="" />
@@ -100,6 +82,28 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test/feature_det.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="hwController" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Pudica_treannidopo" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/hwController.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -178,16 +182,16 @@
       <list>
         <item itemvalue="Python.main_pudica" />
         <item itemvalue="Python.network_classification" />
+        <item itemvalue="Python.hwController" />
         <item itemvalue="Python.network_detection" />
         <item itemvalue="Python.feature_det" />
-        <item itemvalue="Python.Feature_class" />
       </list>
     </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-babbdf50b680-746f403e7f0c-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-241.15989.155" />
+        <option value="bundled-python-sdk-975db3bf15a3-31b6be0877a2-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-241.18034.82" />
       </set>
     </attachedChunks>
   </component>
@@ -288,7 +292,39 @@
       <option name="project" value="LOCAL" />
       <updated>1711967381148</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="Si può fare. 1st completely working version">
+      <option name="closed" value="true" />
+      <created>1716629555284</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1716629555284</updated>
+    </task>
+    <task id="LOCAL-00013" summary="WIP rotazioni">
+      <option name="closed" value="true" />
+      <created>1718742911982</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1718742911982</updated>
+    </task>
+    <task id="LOCAL-00014" summary="refactor wip">
+      <option name="closed" value="true" />
+      <created>1719235270534</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1719235270534</updated>
+    </task>
+    <task id="LOCAL-00015" summary="rotation and translation done">
+      <option name="closed" value="true" />
+      <created>1719240166634</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1719240166634</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -303,7 +339,11 @@
     <MESSAGE value="Update classification network." />
     <MESSAGE value="Producer consumer multithreaded" />
     <MESSAGE value="Post processing result for bbox and operation" />
-    <option name="LAST_COMMIT_MESSAGE" value="Post processing result for bbox and operation" />
+    <MESSAGE value="Si può fare. 1st completely working version" />
+    <MESSAGE value="WIP rotazioni" />
+    <MESSAGE value="refactor wip" />
+    <MESSAGE value="rotation and translation done" />
+    <option name="LAST_COMMIT_MESSAGE" value="rotation and translation done" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -318,12 +358,14 @@
           <line>41</line>
           <option name="timeStamp" value="14" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/main_pudica.py</url>
-          <line>120</line>
-          <option name="timeStamp" value="21" />
-        </line-breakpoint>
       </breakpoints>
+      <default-breakpoints>
+        <breakpoint type="python-exception">
+          <properties notifyOnTerminate="true" exception="BaseException">
+            <option name="notifyOnTerminate" value="true" />
+          </properties>
+        </breakpoint>
+      </default-breakpoints>
     </breakpoint-manager>
   </component>
 </project>
