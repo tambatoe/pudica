@@ -4,11 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="663de708-a009-4aa8-8eab-54722926917c" name="Changes" comment="recognize and operation working, WIP on FSM">
-      <change afterPath="$PROJECT_DIR$/hwController_movements.json" afterDir="false" />
+    <list default="true" id="663de708-a009-4aa8-8eab-54722926917c" name="Changes" comment="Add functions for communication and rotation">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/hwController.py" beforeDir="false" afterPath="$PROJECT_DIR$/hwController.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main_pudica.py" beforeDir="false" afterPath="$PROJECT_DIR$/main_pudica.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -329,7 +327,15 @@
       <option name="project" value="LOCAL" />
       <updated>1719927612954</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="Add functions for communication and rotation">
+      <option name="closed" value="true" />
+      <created>1726749801406</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1726749801406</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -349,7 +355,8 @@
     <MESSAGE value="refactor wip" />
     <MESSAGE value="rotation and translation done" />
     <MESSAGE value="recognize and operation working, WIP on FSM" />
-    <option name="LAST_COMMIT_MESSAGE" value="recognize and operation working, WIP on FSM" />
+    <MESSAGE value="Add functions for communication and rotation" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add functions for communication and rotation" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -363,6 +370,11 @@
           <url>file://$PROJECT_DIR$/network_classification.py</url>
           <line>41</line>
           <option name="timeStamp" value="14" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/hwController.py</url>
+          <line>271</line>
+          <option name="timeStamp" value="16" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>

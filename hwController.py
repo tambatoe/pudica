@@ -46,6 +46,7 @@ def get_vector_endpoint(x0, y0, length, angle_deg):
 
     return x_end, y_end
 
+
 class UART:
     ser = None
 
@@ -89,7 +90,7 @@ class UART:
         """ Read a response from UART """
         if UART.ser is None:
             print('responding 0')
-            return  0
+            return 0
         # Read response from UART
         response = UART.ser.read(max_bytes)  # Read up to max_bytes or until timeout
         return response.decode('utf-8')  # Convert bytes to string
@@ -102,6 +103,7 @@ class UART:
             UART.ser = None
             print("UART connection closed.")
 
+
 class PudicaStructure:
     def __init__(self):
         self.l1 = 88.59
@@ -112,7 +114,7 @@ class PudicaStructure:
         self.right_rots = [0, 0, 0, 0]
 
         self.current_step = 0
-        self.last_automation = 'idle'
+        self.last_automation = 'breath'
 
         with open('hwController_movements.json') as f:
             self.automation = json.load(f)
@@ -146,7 +148,6 @@ class PudicaStructure:
 
         print(f"The angles are: {self.left_rots} {self.right_rots}")
 
-
     def update_on_deg(self, automation_type, current_motor_status):
         # aggiorna le posizioni applicando direttamente gli angoli in degrees (questo per le sequenze automatiche)
 
@@ -162,7 +163,6 @@ class PudicaStructure:
 
         self.left_rots = self.automation['left'][automation_type][self.current_step]
         self.right_rots = self.automation['right'][automation_type][self.current_step]
-
 
     def next_deg(self, current_motor_status, automation_type, person_point, person_radius):
         """
@@ -198,6 +198,7 @@ class HwController:
         # emergency stop
         self.stop = False
 
+        self.prev_automation_type = 'breath'
         self.pudica = PudicaStructure()
         UART.init()
 
@@ -233,11 +234,7 @@ class HwController:
             UART.send_command(1, 0x00, 0x00)
             return
 
-        #TODO: mappatura dei vari motori posizione - id
-
-        # TODO decidere automation type in base alla presenza e posizione di una persona
-
-        automation_type = 'breath'
+        # TODO: mappatura dei vari motori posizione - id
 
         current_status = []
         # lettura pos correnti
@@ -245,15 +242,42 @@ class HwController:
             UART.send_command(4, i, 0)  # 2 motori all'inizio
             current_status.append(UART.read_response())
 
+        # TODO decidere automation type in base alla presenza e posizione di una persona
+
+        automation_type = ''
+        person_in_scene = 0.2 < self.center[0] < 0.8 and 0.2 < self.center[1] < 0.8
+        if self.prev_automation_type == 'follow_person':
+            if person_in_scene:
+                automation_type = 'follow_person'
+            else:
+                automation_type = 'closing'
+        elif self.prev_automation_type == 'closing':
+            if all(element == 0 for element in current_status):
+                automation_type = 'breath'
+            else:
+                automation_type = 'closing'
+        elif self.prev_automation_type == 'opening':
+            if all(element == 0 for element in current_status):
+                automation_type = 'follow_person'
+            else:
+                automation_type = 'opening'
+        elif self.prev_automation_type == 'breath':
+            if person_in_scene:
+                automation_type = 'opening'
+            else:
+                automation_type = 'breath'
+
+        self.prev_automation_type = automation_type
+
         degs_l, degs_r = self.pudica.next_deg(current_status, automation_type,
                                               self.center, self.circle_radius)
 
         # move, motor id, degree
-        UART.send_command(1, 0x01, degs_l[0]) # 2 motori all'inizio
+        UART.send_command(1, 0x01, degs_l[0])  # 2 motori all'inizio
         UART.send_command(1, 0x02, degs_l[0])
-        UART.send_command(1, 0x03, degs_l[1]) # 1 motore centrale
-        UART.send_command(1, 0x04, degs_l[2]) ## questo è il diagonale
-        UART.send_command(1, 0x05, degs_l[3]) # 1 motore alla fine
+        UART.send_command(1, 0x03, degs_l[1])  # 1 motore centrale
+        UART.send_command(1, 0x04, degs_l[2])  ## questo è il diagonale
+        UART.send_command(1, 0x05, degs_l[3])  # 1 motore alla fine
 
         UART.send_command(1, 0x06, degs_r[0])
         UART.send_command(1, 0x07, degs_r[0])
