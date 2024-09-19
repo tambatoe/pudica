@@ -4,14 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="663de708-a009-4aa8-8eab-54722926917c" name="Changes" comment="rotation and translation done">
+    <list default="true" id="663de708-a009-4aa8-8eab-54722926917c" name="Changes" comment="recognize and operation working, WIP on FSM">
+      <change afterPath="$PROJECT_DIR$/hwController_movements.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/hwController.py" beforeDir="false" afterPath="$PROJECT_DIR$/hwController.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main_pudica.py" beforeDir="false" afterPath="$PROJECT_DIR$/main_pudica.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network_classification.py" beforeDir="false" afterPath="$PROJECT_DIR$/network_classification.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network_detection.py" beforeDir="false" afterPath="$PROJECT_DIR$/network_detection.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/feature_det.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/feature_det.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/weights.best.hdf5" beforeDir="false" afterPath="$PROJECT_DIR$/weights.best.hdf5" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -57,7 +54,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "git-widget-placeholder": "main",
     "last_opened_file_path": "/home/tambatoe/Workspace/Pudica_treannidopo",
-    "settings.editor.selected.configurable": "preferences.pluginManager"
+    "settings.editor.selected.configurable": "preferences.lookFeel"
   }
 }]]></component>
   <component name="RecentsManager">
@@ -181,9 +178,9 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.main_pudica" />
+        <item itemvalue="Python.network_detection" />
         <item itemvalue="Python.network_classification" />
         <item itemvalue="Python.hwController" />
-        <item itemvalue="Python.network_detection" />
         <item itemvalue="Python.feature_det" />
       </list>
     </recent_temporary>
@@ -191,7 +188,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-975db3bf15a3-31b6be0877a2-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-241.18034.82" />
+        <option value="bundled-python-sdk-98f27166c754-ba05f1cad1b1-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-242.21829.153" />
       </set>
     </attachedChunks>
   </component>
@@ -324,7 +321,15 @@
       <option name="project" value="LOCAL" />
       <updated>1719240166634</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="recognize and operation working, WIP on FSM">
+      <option name="closed" value="true" />
+      <created>1719927612954</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1719927612954</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -343,7 +348,8 @@
     <MESSAGE value="WIP rotazioni" />
     <MESSAGE value="refactor wip" />
     <MESSAGE value="rotation and translation done" />
-    <option name="LAST_COMMIT_MESSAGE" value="rotation and translation done" />
+    <MESSAGE value="recognize and operation working, WIP on FSM" />
+    <option name="LAST_COMMIT_MESSAGE" value="recognize and operation working, WIP on FSM" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

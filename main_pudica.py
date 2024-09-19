@@ -11,6 +11,10 @@ from hwController import HwController
 
 
 def capture_f():
+    """
+    Cattura il frame e lo inserisce in last_frame_q.
+    La coda é in lettura dal thread di pose_detection che cerca le persone nell'immagine
+    """
     global do_loop
     global capture_inference_q
     global last_frame_q
@@ -33,6 +37,12 @@ def capture_f():
 
 
 def pose_detect_f():
+    """
+    thread per la pose detect
+    esecuzione della rete che trova le posizioni, i risultati vengono accodati in inference_pose_q.
+    La coda viene usata dal thread di pose evaluation.
+    """
+
     global do_loop
     global capture_inference_q
     global inference_pose_q
@@ -53,6 +63,13 @@ def pose_detect_f():
 
 
 def pose_eval_f():
+    """
+    Thread di pose evaluation.
+    I risultati della pose detection vengono passati nella rete di valutazione, i risultati
+    di questa rete vengono inviati al controller che si occupa di gestire gli attuatori.
+    :return:
+    """
+
     global do_loop
     global inference_pose_q
     global pose_resultev_q
@@ -76,13 +93,25 @@ def pose_eval_f():
 
 
 def loop_phisical_movement(hw_controller):
+    """
+    Loop per il movimento fisico dell'hardware.
+    Applica le precondizioni e richiama la funzione per far avanzare il movimento dell'hw
+    :param hw_controller: oggetto che rappresenta lo stato attuale degli attuatori fisici e ne controlla i movimenti
+    :return:
+    """
     global do_loop
 
     while do_loop:
+        time.sleep(0.001)
         hw_controller.move_physical()
 
 
 def result_evaluation_f():
+    """
+    Applica le funzioni di controllo per far muovere l'hw
+    Può mostrare anche il debug per quanto riguarda il posizionamento della persona nell'immagine
+    :return:
+    """
     global do_loop
     global pose_resultev_q
     global last_frame_q
@@ -106,27 +135,30 @@ def result_evaluation_f():
     while do_loop:
         kp, result = pose_resultev_q.get(block=True, timeout=None)
 
+        # \note valuto la media delle ultime valutazioni della posa per decidere se aprire o chiudere
         # operation = np.argmax(result[0], axis=0)
         operation_avg += 0.05 if result[0][0] < result[0][1] else -0.05
         operation_avg = np.clip(operation_avg, 0, 1)
 
+        # \note valuto la posizione della bounding box del corpo e la aggiungo al controller HW
         kpma = np.ma.masked_where(kp == -1, kp)
         min_y = np.min(kpma[:, 0], axis=0)
         max_y = np.max(kp[:, 0], axis=0)
         min_x = np.min(kpma[:, 1], axis=0)
         max_x = np.max(kp[:, 1], axis=0)
 
-        p0 = (np.asarray([min_x, min_y]) - 0.5) * meter_size  # normalize center of image
-        p1 = (np.asarray([max_x, max_y]) - 0.5) * meter_size
+        p0 = (np.asarray([min_x, min_y]))
+        p1 = (np.asarray([max_x, max_y]))
 
         hw_controller.add_detection(p0, p1, operation_avg)
 
         # print(f"operation {operation_avg}")
-
+        # parte di disegno per preview
         try:
             frame = last_frame_q.get(block=False, timeout=1)
             height, width, _ = frame.shape
 
+            # moltiplico in quanto draw only
             center_p = np.array([width * (min_x + max_x) / 2, height * (min_y + max_y) / 2])
             center_list.append(center_p)
             if len(center_list) > 60:

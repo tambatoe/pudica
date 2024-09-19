@@ -1,141 +1,262 @@
-from functools import partial
+import json
+import math
+import time
+from math import degrees
+import serial
 
-import numpy
 import numpy as np
 
-from hw_math_support import *
-from enum import Enum
+'''
+command 1 STOP, 0, 0
+command 2 speed, motor id, new speed
+command 3 move, motor id, position
+command 4 get movement status, motor id, 
+            response: 0 moving, 1 done
+'''
 
 
-class SingleArm:
+def find_tangent_angles(x, y, x1, y1, r):
+    # Step 1: Calculate the angle to the center of the circle
+    theta_center = np.arctan2(y1 - y, x1 - x)
 
-    def __init__(self, origin, length):
-        origin = np.array(origin)
-        self.origin = origin
-        self.length = length
-        self.theta = 0
-        self.point1 = origin + [0, length]
+    # Step 2: Calculate the distance from the origin to the center of the circle
+    d = np.sqrt((x1 - x) ** 2 + (y1 - y) ** 2)
 
-        self.min_distance = 10
+    # Step 3: Check if tangents exist (distance must be greater than the radius)
+    if d <= r:
+        raise ValueError("The origin is inside the circle or on the circle, no tangents exist.")
 
-    def rotate(self, person_point):
-        ''' dati
-             pa = anchor point (origin)
-             pl = punto libero
-             pe = punto persona
+    # Step 4: Calculate the angle between the center line and the tangent lines
+    alpha = np.arcsin(r / d)
 
-             AE = distanza anchor persona
-             LE = distanza persona punto libero pari alla distanza minima persona - braccio
-             AL = lunghezza segmento
-        '''
+    # Step 5: Calculate the two tangent angles
+    theta_tangent_1 = theta_center + alpha
+    theta_tangent_2 = theta_center - alpha
 
-        # retta passante per pa - pe il valore di m in gradi servirà per ottenere l'angolo totale del braccio
-        m, q = line_eq(self.origin, person_point)
-        LE = 3  # 0.05
-        AE = 3  # point_distance(self.origin, person_point)
-        AL = 3  # 0.3 # self.length
+    return np.degrees(theta_tangent_1), np.degrees(theta_tangent_2)
 
-        D = AE ** 2 + AL ** 2 - LE ** 2
-        d = (2 * AE * AL)
-        A = np.rad2deg(np.arccos(D / d))
 
-        self.theta = A + m
+def get_vector_endpoint(x0, y0, length, angle_deg):
+    # Convert angle from degrees to radians
+    angle_rad = np.radians(angle_deg)
 
-        p1 = find_point_on_line(self.origin[0], self.origin[1], m, self.length)
-        self.point1 = np.array(p1)
+    # Calculate the x and y components of the vector
+    x_end = x0 + length * np.cos(angle_rad)
+    y_end = y0 + length * np.sin(angle_rad)
 
-        return self.theta, self.point1
+    return x_end, y_end
 
+class UART:
+    ser = None
+
+    @staticmethod
+    def init(port='/dev/ttyUSB0', baudrate=9600, timeout=1):
+        """ Initialize the UART connection if it's not already initialized """
+
+        return 0
+        if UART.ser is None:
+            UART.ser = serial.Serial(
+                port=port,
+                baudrate=baudrate,
+                timeout=timeout
+            )
+            if UART.ser.is_open:
+                print(f"Connected to {UART.ser.name}")
+
+    @staticmethod
+    def send_command(command, param0=0, param1=0):
+        max_bytes = 100
+        """ Send a UART command """
+        print(f'sending command {command} {param0} {param1}')
+
+        # Convert the command to bytes and send it
+        if isinstance(command, str):
+            command = command.encode('utf-8')  # Convert string to bytes if necessary
+        if isinstance(param0, str):
+            param0 = param0.encode('utf-8')
+        if isinstance(param1, str):
+            param1 = param1.encode('utf-8')
+
+        if UART.ser is None:
+            print(f"Command sent: {command} {param0} {param1}")
+        else:
+            UART.ser.write(command)
+            UART.ser.write(param0)
+            UART.ser.write(param1)
+
+    @staticmethod
+    def read_response(max_bytes=100):
+        """ Read a response from UART """
+        if UART.ser is None:
+            print('responding 0')
+            return  0
+        # Read response from UART
+        response = UART.ser.read(max_bytes)  # Read up to max_bytes or until timeout
+        return response.decode('utf-8')  # Convert bytes to string
+
+    @staticmethod
+    def close():
+        """ Close the UART connection """
+        if UART.ser is not None:
+            UART.ser.close()
+            UART.ser = None
+            print("UART connection closed.")
 
 class PudicaStructure:
-
     def __init__(self):
-        l1 = 88.59
-        l2 = 122.82
-        l3 = 88.59
+        self.l1 = 88.59
+        self.l2 = 122.82
+        self.l3 = 88.59
 
-        self.p0_0 = [0, 0]
-        self.p0_0 = [0, (l1 + l2 + l3)]
+        self.left_rots = [0, 0, 0, 0]
+        self.right_rots = [0, 0, 0, 0]
 
-        self.arms_left = [SingleArm([0, 0], l1),
-                          SingleArm([l1, 0], l2),
-                          SingleArm([l1 + l2, 0], l3)]
+        self.current_step = 0
+        self.last_automation = 'idle'
 
-        self.arms_right = [SingleArm([0, 0], l1),
-                           SingleArm([l1, 0], l2),
-                           SingleArm([l1 + l2, 0], l3)]
+        with open('hwController_movements.json') as f:
+            self.automation = json.load(f)
 
-    def update_rotations(self, person_point):
-        rot_l = []
-        rot_r = []
+    def update_on_point(self, person_point, person_radius):
+        # aggiorna le posizioni sfruttando il punto centrale (questo per la parte interattiva)
 
-        point_l = self.arms_left[0].origin
-        point_r = self.arms_right[0].origin
-        for i in range(0, 3):
-            self.arms_left[i].origin = point_l
-            rot, point_l = self.arms_left[i].rotate(person_point)
-            rot_l.append(rot)
+        x, y = 0, 0  # Origine del primo segmento
+        tangent_angles = find_tangent_angles(x, y, person_point[0], person_point[1], person_radius * 1.1)
+        self.left_rots[0] = tangent_angles[0]
 
-            self.arms_right[i].origin = point_r
-            rot, point_r = self.arms_right[i].rotate(person_point)
-            rot_r.append(rot)
+        x1, y1 = get_vector_endpoint(x, y, self.l1, tangent_angles[0])
+        tangent_angles = find_tangent_angles(x1, y1, person_point[0], person_point[1], person_radius * 1.1)
+        self.left_rots[1] = tangent_angles[0]
 
-        return rot_l, rot_r
+        x2, y2 = get_vector_endpoint(x1, y1, self.l1, tangent_angles[0])
+        tangent_angles = find_tangent_angles(x2, y2, person_point[0], person_point[1], person_radius * 1.1)
+        self.left_rots[3] = tangent_angles[0]
+
+        x, y = 1, 1  # Origine del primo segmento
+        tangent_angles = find_tangent_angles(x, y, person_point[0], person_point[1], person_radius * 1.1)
+        self.right_rots[0] = tangent_angles[1]
+
+        x1, y1 = get_vector_endpoint(x, y, self.l1, tangent_angles[1])
+        tangent_angles = find_tangent_angles(x1, y1, person_point[0], person_point[1], person_radius * 1.1)
+        self.right_rots[1] = tangent_angles[1]
+
+        x2, y2 = get_vector_endpoint(x1, y1, self.l1, tangent_angles[1])
+        tangent_angles = find_tangent_angles(x2, y2, person_point[0], person_point[1], person_radius * 1.1)
+        self.right_rots[3] = tangent_angles[1]
+
+        print(f"The angles are: {self.left_rots} {self.right_rots}")
 
 
-class FsmStatus(Enum):
-    IDLE = 1
-    OPENING = 2
-    OPEN = 3
-    PLAY = 4
-    CLOSING = 5
-    CLOSED = 6
+    def update_on_deg(self, automation_type, current_motor_status):
+        # aggiorna le posizioni applicando direttamente gli angoli in degrees (questo per le sequenze automatiche)
+
+        if self.last_automation == automation_type:
+            """ valuto se lo step è stato completato e devo andare al successivo o sta ancora ruotando"""
+
+            go_next = all(element == 0 for element in current_motor_status)
+            if go_next:
+                self.current_step = (self.current_step + 1) % len(self.automation['left'][automation_type])
+        else:
+            """se ho cambiato tipo di automazione parto dallo step 0"""
+            self.current_step = 0
+
+        self.left_rots = self.automation['left'][automation_type][self.current_step]
+        self.right_rots = self.automation['right'][automation_type][self.current_step]
+
+
+    def next_deg(self, current_motor_status, automation_type, person_point, person_radius):
+        """
+        ritorna il prossimo angolo da raggiungere.
+        Può essere il punto ideale in caso di punto centrale o il passo finale da raggiungere se automazione
+        :return:  2 array di gradi destra e sinistra
+        """
+
+        if automation_type == 'follow_person':
+            self.update_on_point(person_point, person_radius)
+        else:
+            self.update_on_deg(automation_type, current_motor_status)
+        return self.left_rots, self.right_rots
+
 
 class HwController:
+    """
+    Modello del controller fisico, decide la posizione degli attutatori in base a operazione corrente
+    (apri/chiudi) e alla posizione della persona nella scena.
+    """
+
     def __init__(self):
+        """
+        init
+        """
         self.person_bbox_left = None
         self.person_bbox_right = None
-        self.open_percent_left = 100
-        self.open_percent_right = 100
-        self.limit_left = 0
-        self.limit_right = 1
 
-        self.structure = PudicaStructure()
+        self.operation = 1.0
+        self.center = None
+        self.circle_radius = 0
 
-        self.status = FsmStatus.IDLE
-        self.nextStatus = FsmStatus.IDLE
+        # emergency stop
+        self.stop = False
+
+        self.pudica = PudicaStructure()
+        UART.init()
 
     def add_detection(self, person_p0, person_p1, operation):
+        """
+        Aggiorna posizioni e operazioni delle persone.
+        :param person_p0: bounding box della persona, top left
+        :param person_p1: bounding box della persona, bottom right
+        :param operation: valutazione apri/chiudi
+        :return:
+        """
+
         self.person_bbox_left = np.array(person_p0)
         self.person_bbox_right = np.array(person_p1)
 
+        self.operation = operation
+        # TODO: valutare qua se op = 0 è apri o chiudi
         if operation > 0.5:
             print('opening')
 
-        center = (self.person_bbox_left + self.person_bbox_right) / 2
+        self.center = (self.person_bbox_left + self.person_bbox_right) / 2
 
-        self.structure.update_rotations(center)
+        x1, y1 = self.person_bbox_left
+        x2, y2 = self.person_bbox_right
+
+        diagonal_length = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+        self.circle_radius = diagonal_length / 2
 
     def move_physical(self):
+        time.sleep(0.003)
 
-        self.status = self.nextStatus
-        if self.status == FsmStatus.IDLE:
-            print("System is idle.")
-        elif self.status == FsmStatus.OPENING:
-            print("System is opening.")
-        elif self.status == FsmStatus.OPEN:
-            print("System is open.")
-        elif self.status == FsmStatus.PLAY:
-            print("System is playing.")
-        elif self.status == FsmStatus.CLOSING:
-            print("System is closing.")
-        elif self.status == FsmStatus.CLOSED:
-            print("System is closed.")
-        else:
-            print("Unknown status.")
-            self.nextStatus = FsmStatus.IDLE
+        if self.stop:
+            UART.send_command(1, 0x00, 0x00)
+            return
 
-if __name__ == '__main__':
-    controller = HwController()
+        #TODO: mappatura dei vari motori posizione - id
 
-    controller.add_detection([0.49, 0.5], [0.51, 0.5], 0.3)
+        # TODO decidere automation type in base alla presenza e posizione di una persona
+
+        automation_type = 'breath'
+
+        current_status = []
+        # lettura pos correnti
+        for i in range(1, 11):
+            UART.send_command(4, i, 0)  # 2 motori all'inizio
+            current_status.append(UART.read_response())
+
+        degs_l, degs_r = self.pudica.next_deg(current_status, automation_type,
+                                              self.center, self.circle_radius)
+
+        # move, motor id, degree
+        UART.send_command(1, 0x01, degs_l[0]) # 2 motori all'inizio
+        UART.send_command(1, 0x02, degs_l[0])
+        UART.send_command(1, 0x03, degs_l[1]) # 1 motore centrale
+        UART.send_command(1, 0x04, degs_l[2]) ## questo è il diagonale
+        UART.send_command(1, 0x05, degs_l[3]) # 1 motore alla fine
+
+        UART.send_command(1, 0x06, degs_r[0])
+        UART.send_command(1, 0x07, degs_r[0])
+        UART.send_command(1, 0x08, degs_r[1])
+        UART.send_command(1, 0x09, degs_r[2])
+        UART.send_command(1, 0x0A, degs_r[3])
